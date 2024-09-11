@@ -26,7 +26,7 @@ pipeline {
                 //    body: "Test completed with status: $(currentBuild.currentResult).",
                 // )
                 emailext(
-                    attachlog: true,
+                    attachLog: true,
                     to: "reddypremsai585@gmail.com",
                     subject: "Test status email: ${currentBuild.currentResult}",
                     body: "Test completed with status: ${currentBuild.currentResult}."
@@ -52,7 +52,7 @@ pipeline {
                 //    body: "Test completed with status: $(currentBuild.currentResult).",
                 // )
                 emailext(
-                    attachlog: true,
+                    attachLog: true,
                     to: "reddypremsai585@gmail.com",
                     subject: "Test status email: ${currentBuild.currentResult}",
                     body: "Test completed with status: ${currentBuild.currentResult}."
