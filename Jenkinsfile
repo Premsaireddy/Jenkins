@@ -7,13 +7,6 @@ pipeline {
     }
 
     stages {
-        stage('Wait Before Starting') {
-            steps {
-                echo 'Waiting for 1 minute before starting the pipeline...'
-                sleep time: 1, unit: 'MINUTES' // Add a 1-minute delay
-            }
-        }
-
         stage('Build') {
             steps {
                 echo 'Building the project using Maven...'
@@ -85,7 +78,7 @@ pipeline {
     }
     post{
         always{
-            mail to: 'reddypremsai585@gmail.com",
+            mail to: "reddypremsai585@gmail.com",
             subject: "Build status email: ${currentBuild.currentResult}",
             body: "Build completed with status: ${currentBuild.currentResult}."
         }
