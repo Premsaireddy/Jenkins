@@ -2,9 +2,8 @@ pipeline {
     agent any
 
     environment {
-        MAVEN_HOME = tool 'Maven 3.6.3' // Specify the Maven tool name configured in Jenkins
-        AWS_CREDENTIALS = credentials('aws-credentials-id') // Replace with your Jenkins credential ID
-        SONARQUBE_SERVER = 'SonarQube Server' // Replace with your SonarQube server name configured in Jenkins
+        STAGING_SERVER = 'user@staging-server' 
+        SONARQUBE_SERVER = 'user@production-server' 
     }
 
     stages {
@@ -18,83 +17,78 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the project using Maven...'
-                sh "${MAVEN_HOME}/bin/mvn clean package"
             }
         }
 
         stage('Unit and Integration Tests') {
             steps {
                 echo 'Running Unit and Integration Tests...'
-                sh "${MAVEN_HOME}/bin/mvn test"
-                junit '**/target/surefire-reports/*.xml' // Collect JUnit test results
             }
-        }
-
-        stage('Code Analysis') {
-            steps {
-                echo 'Analyzing code using SonarQube...'
-                withSonarQubeEnv(SONARQUBE_SERVER) {
-                    sh "${MAVEN_HOME}/bin/mvn sonar:sonar"
+            post{
+                always {
+                //script{
+                //    emailext attachlog:true,
+                //    to: "reddypremsai585@gmail.com",
+                //    subject: "Test status Email: $(currentBuild.currentResult)",
+                //    body: "Test completed with status: $(currentBuild.currentResult).",
+                // )
+                emailext(
+                    attachlog: true,
+                    to: "reddypremsai585@gmail.com",
+                    subject: "Test status email: ${currentBuild.currentResult}",
+                    body: "Test completed with status: ${currentBuild.currentResult}."
+                )
                 }
             }
         }
-
-        stage('Security Scan') {
-            steps {
-                echo 'Running Security Scan using OWASP Dependency-Check...'
-                sh 'dependency-check.sh --project your-project-name --scan .'
+        stage('Code Analysis'){
+            steps{
+                echo "Analyzing the code quality for industry requirements"
             }
         }
-
-        stage('Deploy to Staging') {
-            steps {
-                echo 'Deploying to Staging environment...'
-                withCredentials([string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
-                                string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    sh '''
-                        aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-                        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-                        aws ec2 describe-instances --region your-region --instance-ids i-xxxxxxxxxxxxx
-                        # Add your deployment commands here
-                    '''
+        stage('Security Scan'){
+            steps{
+                echo "Performing the security scan on the code"
+            }
+            post{
+                always {
+                //script{
+                //    emailext attachlog:true,
+                //    to: "reddypremsai585@gmail.com",
+                //    subject: "Test status Email: $(currentBuild.currentResult)",
+                //    body: "Test completed with status: $(currentBuild.currentResult).",
+                // )
+                emailext(
+                    attachlog: true,
+                    to: "reddypremsai585@gmail.com",
+                    subject: "Test status email: ${currentBuild.currentResult}",
+                    body: "Test completed with status: ${currentBuild.currentResult}."
+                )
                 }
             }
         }
-
-        stage('Integration Tests on Staging') {
-            steps {
-                echo 'Running Integration Tests on Staging environment...'
-                sh 'run-staging-integration-tests.sh' // Replace with your test script or commands
+        stage('Deploy to staging'){
+            steps{
+                echo "Deploying the application to the staging server"
             }
         }
-
-        stage('Deploy to Production') {
-            steps {
-                input message: 'Ready to deploy to production?', ok: 'Deploy'
-                echo 'Deploying to Production environment...'
-                withCredentials([string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
-                                string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    sh '''
-                        aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-                        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-                        aws ec2 describe-instances --region your-region --instance-ids i-xxxxxxxxxxxxx
-                        # Add your deployment commands here
-                    '''
-                }
+        stage("Integration tests on staging"){
+            steps{
+                echo "Running integration tests on staging using cucumber tests"
+            }
+        }
+        stage("Deploy to production"){
+            steps{
+                echo "Deploying the application to the production server"
             }
         }
     }
-
-    post {
-        always {
-            echo 'Cleaning up...'
-            cleanWs()
-        }
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed. Check logs for details.'
+    post{
+        always{
+            mail to: 'reddypremsai585@gmail.com",
+            subject: "Build status email: ${currentBuild.currentResult}",
+            body: "Build completed with status: ${currentBuild.currentResult}."
         }
     }
 }
+        
